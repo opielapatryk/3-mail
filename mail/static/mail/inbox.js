@@ -69,10 +69,58 @@ function load_mailbox(mailbox) {
           } catch (error) {
             emailHeader.innerHTML = 'You dont have any emails'
           }
-  
+            // Recall that you can send a PUT request to /emails/<email_id> to mark an email as archived or unarchived.
+
+          // Add to inbox button that allows you to archive the email.
+          // Add to Archive button that allows you to unarchive the email.
+          // Once an email has been archived or unarchived, load the user’s inbox.
+
+          if(mailbox === 'inbox'){
+            const archiveButton = document.createElement('button');
+            archiveButton.innerHTML = 'Archive';
+            emailDiv.appendChild(archiveButton);
+            archiveButton.style.zIndex = '9999';
+
+            archiveButton.onclick = (event) =>{
+              event.stopPropagation();
+                      // Mark email as archived 
+              fetch(`/emails/${mail.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    archived: true
+                })
+              }).then(load_mailbox('inbox'))
+              document.location.reload();
+
+            }
+            // Load user inbox
+          } else if(mailbox === 'archive'){
+            const archiveButton = document.createElement('button');
+            archiveButton.innerHTML = 'Unarchive';
+            emailDiv.appendChild(archiveButton);
+            archiveButton.style.zIndex = '9999';
+            archiveButton.onclick = (event) =>{
+              event.stopPropagation();
+                      // Mark email as unarchived 
+              fetch(`/emails/${mail.id}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    archived: false
+                })
+              }).then(load_mailbox('inbox'))
+              document.location.reload();
+
+            }
+            // Load user inbox
+            
+          }
+
         });
       });
 
+
+
+      
       
 }
 
@@ -128,8 +176,30 @@ function view_email(email_id){
       fetch(`/emails/${email_id}`, {
         method: 'PUT',
         body: JSON.stringify({
-            archived: true
+            read: true
         })
       })
+
+      // Reply button
+      const replyButton = document.createElement('button');
+      replyButton.innerHTML = 'Reply';
+      replyButton.onclick = () => {
+        // Take user to composition form
+
+          // Show compose view and hide other views
+          document.querySelector('#emails-view').style.display = 'none';
+          document.querySelector('#compose-view').style.display = 'block';
+
+          // Clear out composition fields
+          document.querySelector('#compose-recipients').value = '';
+          document.querySelector('#compose-subject').value = '';
+          document.querySelector('#compose-body').value = '';
+      }
+      emails_view.appendChild(replyButton);
   });
 }
+
+
+// Pre-fill the composition form with the recipient field set to whoever sent the original email.
+// Pre-fill the subject line. If the original email had a subject line of foo, the new subject line should be Re: foo. (If the subject line already begins with Re: , no need to add it again.)
+// Pre-fill the body of the email with a line like "On Jan 1 2020, 12:00 AM foo@example.com wrote:" followed by the original text of the email.
