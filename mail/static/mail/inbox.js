@@ -23,6 +23,8 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+
+  
 }
 
 function load_mailbox(mailbox) {
@@ -48,6 +50,7 @@ function load_mailbox(mailbox) {
 
       emails.forEach(mail => {
         const emailDiv = document.createElement('div');
+        emailDiv.addEventListener('click',() => view_email(mail.id));
         const emailHeader = document.createElement('h4');
         try {
           if(mailbox === 'sent'){
@@ -60,14 +63,13 @@ function load_mailbox(mailbox) {
           emails_view.appendChild(emailDiv);
   
   
-          if(mail.read === true){
+          if(mail.archived === true){
             emailDiv.style.backgroundColor = 'lightgray';
           }
           } catch (error) {
             emailHeader.innerHTML = 'You dont have any emails'
           }
   
-        //If the email is unread, it should appear with a white background. If the email has been read, it should appear with a gray background.
         });
       });
 
@@ -102,4 +104,32 @@ function send_email(e){
   
   // Once the email has been sent, load the user’s sent mailbox.
   load_mailbox('sent')
+}
+
+function view_email(email_id){
+  console.log('xd')
+
+  fetch(`/emails/${email_id}`)
+  .then(response => response.json())
+  .then(email => {
+      console.log(email);
+      const emails_view = document.querySelector('#emails-view')
+      emails_view.innerHTML = ''
+
+      // create html elements with mail content 
+      const emailDiv = document.createElement('div');
+      const emailHeader = document.createElement('h4');
+      emailHeader.innerHTML = 'Sender: ' + email.sender + '<br>Recipients: ' + email.recipients + '<br>Subject: ' + email.subject + '<br>Tiimestamp: ' + email.timestamp + '<br>Body: ' + email.body;
+      emailDiv.appendChild(emailHeader);
+      emailDiv.style.border = '1px solid black';
+      emails_view.appendChild(emailDiv);
+
+      // Mark email as read 
+      fetch(`/emails/${email_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            archived: true
+        })
+      })
+  });
 }
