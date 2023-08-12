@@ -191,15 +191,17 @@ function view_email(email_id){
           document.querySelector('#compose-view').style.display = 'block';
 
           // Clear out composition fields
-          document.querySelector('#compose-recipients').value = '';
-          document.querySelector('#compose-subject').value = '';
-          document.querySelector('#compose-body').value = '';
+          document.querySelector('#compose-recipients').value = email.sender;
+          if (!email.subject.startsWith("Re:")){
+            document.querySelector('#compose-subject').value = `Re: ${email.subject}`;
+          }else{
+            document.querySelector('#compose-subject').value = email.subject;
+          }
+          document.querySelector('#compose-body').value = `On ${email.timestamp} ${email.sender} wrote: "${email.body}"`;
       }
       emails_view.appendChild(replyButton);
   });
 }
 
 
-// Pre-fill the composition form with the recipient field set to whoever sent the original email.
-// Pre-fill the subject line. If the original email had a subject line of foo, the new subject line should be Re: foo. (If the subject line already begins with Re: , no need to add it again.)
 // Pre-fill the body of the email with a line like "On Jan 1 2020, 12:00 AM foo@example.com wrote:" followed by the original text of the email.
